@@ -84,6 +84,15 @@ pub struct Bullet {
     pub will_remove: bool,
 }
 
+impl Bullet {
+    pub fn rotated(&self, degrees: f64) -> Self {
+        let mut ret = self.clone();
+        (ret.velocity_x, ret.velocity_y) =
+            crate::rotate_vector(ret.velocity_x, ret.velocity_y, degrees);
+        ret
+    }
+}
+
 impl Shape for Bullet {
     fn draw(&self, painter: &mut canvas::Painter) {
         let points = Points {

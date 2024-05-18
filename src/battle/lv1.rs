@@ -42,10 +42,8 @@ impl EnemyLevel1 {
             is_player: false,
             ..Default::default()
         };
-        let mut b1 = b0.clone();
-        (b1.velocity_x, b1.velocity_y) = crate::rotate_vector(b1.velocity_x, b1.velocity_y, 30.);
-        let mut b2 = b0.clone();
-        (b2.velocity_x, b2.velocity_y) = crate::rotate_vector(b2.velocity_x, b2.velocity_y, -30.);
+        let b1 = b0.rotated(30.);
+        let b2 = b0.rotated(-30.);
 
         vec![b0, b1, b2]
     }
