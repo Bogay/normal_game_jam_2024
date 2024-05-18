@@ -6,7 +6,7 @@ use ratatui::{
 };
 
 use crate::{
-    battle::{Enemy, EnemyAction, EnemyLevel0, EnemyLevel1, EnemyLevel2},
+    battle::{create_enemy, Enemy, EnemyAction},
     dis, norm,
 };
 
@@ -139,7 +139,7 @@ impl Default for App {
                 ..Player::default()
             },
             stage_index: 0,
-            enemy: Box::new(EnemyLevel2::new()),
+            enemy: create_enemy(0).unwrap(),
             screen_width: 100.,
             logs: vec![],
             bullets: vec![],
@@ -205,6 +205,13 @@ impl App {
         ) {
             self.logs
                 .push(GameLog(format!("enemy {} died.", self.stage_index)));
+            self.stage_index += 1;
+            if let Some(e) = create_enemy(self.stage_index) {
+                self.enemy = e;
+                // TODO: gain new skill
+            } else {
+                // TODO: game ending
+            }
             self.bullets.retain(|b| b.is_player);
         } else {
             self.bullets.extend(self.enemy.bullets());

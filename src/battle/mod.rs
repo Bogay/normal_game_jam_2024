@@ -9,6 +9,15 @@ use crate::app::{AppResult, Bullet, Player};
 use ratatui::widgets::canvas::Shape;
 use std::{fmt::Debug, time::Duration};
 
+pub(crate) fn create_enemy(stage: usize) -> Option<Box<dyn Enemy>> {
+    match stage {
+        0 => Some(Box::new(EnemyLevel0::new())),
+        1 => Some(Box::new(EnemyLevel1::new())),
+        2 => Some(Box::new(EnemyLevel2::new())),
+        _ => None,
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum EnemyAction {
     Die,
