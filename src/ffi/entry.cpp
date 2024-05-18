@@ -14,13 +14,14 @@ Bullet *init_bullet()
     b->damage_by_frame = false;
     b->hp = 0;
     b->mp_cost = 1;
-    b->speed = 1;
+    b->speed = 10;
 
     return b;
 }
 extern "C" void c_create_bullet(Bullet* bullet);
-extern cpp_create_bullet(Bullet* bullet, int stacking);
+extern void cpp_create_bullet(Bullet* bullet, int stacking);
 #include "go/go_ffi.h"
+extern "C" void py_create_bullet(Bullet* bullet);
 
 __declspec(dllexport) Bullet *create_bullet(char **spell, int cnt)
 {
@@ -46,6 +47,8 @@ __declspec(dllexport) Bullet *create_bullet(char **spell, int cnt)
             memcpy(base, gs.data, sizeof(Bullet));
             printf("aft hp: %d\n", base->hp);
         }
+        else if (strcmp(spell[i], "python") == 0)
+            py_create_bullet(base);
         else
             break;
     }

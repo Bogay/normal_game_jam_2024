@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#pragma pack(1)
 typedef struct __RGBA__
 {
     char r;
@@ -16,3 +17,4 @@ typedef struct __Bullet__
     bool damage_by_frame;
     int mp_cost;
 } Bullet;
+#pragma unpack()
