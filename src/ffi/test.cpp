@@ -2,6 +2,13 @@
 extern Bullet *create_bullet(char **spell, int cnt);
 int main()
 {
-    char *test="asd";
-    create_bullet(&test, 1);
+    char *test[]={
+        "python",
+        /*
+        "C",
+        "c plus plus",
+        "go",
+        */
+    };
+    create_bullet(test, sizeof(test)/sizeof(char*));
 }

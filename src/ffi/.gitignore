@@ -1,2 +1,6 @@
 *.dll
 *.exe
+*.o
+go/*.lib
+go/*.h
+__pycache__
