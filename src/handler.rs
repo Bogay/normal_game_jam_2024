@@ -27,12 +27,12 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
         KeyCode::Down => {
             app.events.push(GameEvent::PlayerMove(0., -1.));
         }
-        KeyCode::Char(' ') => {
-            app.events.push(GameEvent::Shoot(
-                app.player.pos_x + app.player.face_x,
-                app.player.pos_y + app.player.face_y,
-            ));
-        }
+        // KeyCode::Char(' ') => {
+        //     app.events.push(GameEvent::Shoot(
+        //         app.player.pos_x + app.player.face_x,
+        //         app.player.pos_y + app.player.face_y,
+        //     ));
+        // }
         // Other handlers you could add here.
         _ => {}
     }

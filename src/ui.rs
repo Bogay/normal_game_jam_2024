@@ -58,10 +58,7 @@ fn render_game_screen(app: &mut App, frame: &mut Frame, area: Rect) {
             .marker(Marker::Braille)
             .block(
                 Block::bordered()
-                    .title(format!(
-                        "  Normal Game Jam 2024: Stage {}  ",
-                        app.stage_index
-                    ))
+                    .title(format!("  嘴砲遊戲：Stage {}  ", app.stage_index))
                     .title_alignment(Alignment::Center)
                     .border_type(BorderType::Rounded),
             )

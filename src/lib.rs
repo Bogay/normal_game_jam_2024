@@ -14,6 +14,9 @@ pub mod tui;
 pub mod handler;
 
 mod battle;
+mod skill;
+
+/// Some math-related functions
 
 pub(crate) fn norm(x: f64, y: f64) -> (f64, f64) {
     const EPSILON: f64 = 0.0001;

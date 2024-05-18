@@ -9,7 +9,7 @@ use ratatui::{
 
 use crate::{
     battle::{create_enemy, Enemy, EnemyAction},
-    dis, norm,
+    skill::Skill,
 };
 
 /// Application result type.
@@ -27,6 +27,7 @@ pub struct Player {
     pub max_mp: isize,
     pub move_velocity: f64,
     pub size: f64,
+    pub skills: Vec<Skill>,
 }
 
 /// In-game events
@@ -43,7 +44,7 @@ impl Player {
         self.pos_x += delta_x;
         self.pos_y += delta_y;
 
-        let (delta_x, delta_y) = norm(delta_x, delta_y);
+        let (delta_x, delta_y) = crate::norm(delta_x, delta_y);
         if (delta_x + delta_y).abs() > 0. {
             self.face_x = delta_x;
             self.face_y = delta_y;
@@ -59,7 +60,7 @@ impl Player {
 
         let delta_x = sx - self.pos_x;
         let delta_y = sy - self.pos_y;
-        let (delta_x, delta_y) = norm(delta_x, delta_y);
+        let (delta_x, delta_y) = crate::norm(delta_x, delta_y);
         Bullet {
             pos_x: self.pos_x + delta_x * BULLET_OFFSET,
             pos_y: self.pos_y + delta_y * BULLET_OFFSET,
@@ -192,10 +193,15 @@ impl App {
         self.player.walk(player_move_x, player_move_y).unwrap();
 
         if let Some((sx, sy)) = shoot {
-            let bullet = self.player.new_bullet(sx, sy);
-            self.bullets.push(bullet);
-            self.logs
-                .push(GameLog(format!("Shoot pos=({:.2}, {:.2})", sx, sy)));
+            if self.player.mp <= 0 {
+                self.logs.push(GameLog("not enough MP".to_string()));
+            } else {
+                let bullet = self.player.new_bullet(sx, sy);
+                self.bullets.push(bullet);
+                self.logs
+                    .push(GameLog(format!("shoot pos=({:.2}, {:.2})", sx, sy)));
+                self.player.mp -= 1;
+            }
         }
 
         // bullets
@@ -205,7 +211,8 @@ impl App {
 
             // check collision for player, enemy should do this in their own impl
             if !b.is_player
-                && dis(b.pos_x, b.pos_y, self.player.pos_x, self.player.pos_y) <= self.player.size
+                && crate::dis(b.pos_x, b.pos_y, self.player.pos_x, self.player.pos_y)
+                    <= self.player.size
             {
                 b.will_remove = true;
                 self.player.hp -= 1;
