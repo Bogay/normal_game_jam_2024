@@ -22,10 +22,10 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     let [stage_screen, logs] =
         Layout::vertical([Constraint::Fill(1), Constraint::Length(10)]).areas(game_screen);
 
-    app.logs.clear();
-    for a in &[game_screen, info_panel, stage_screen, logs] {
-        app.logs.push(GameLog(format!("{a:?}")));
-    }
+    // app.logs.clear();
+    // for a in &[game_screen, info_panel, stage_screen, logs] {
+    //     app.logs.push(GameLog(format!("{a:?}")));
+    // }
 
     render_game_screen(app, frame, stage_screen);
 

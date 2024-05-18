@@ -6,7 +6,7 @@ use ratatui::{
 };
 
 use crate::{
-    battle::{Enemy, EnemyLevel0},
+    battle::{Enemy, EnemyAction, EnemyLevel0},
     dis, norm,
 };
 
@@ -190,8 +190,17 @@ impl App {
         }
 
         // enemy
-        self.enemy.tick(delta, &mut self.player).unwrap();
-        self.bullets.extend(self.enemy.bullets());
+        if matches!(
+            self.enemy.tick(delta, &mut self.player).unwrap(),
+            EnemyAction::Die
+        ) {
+            self.logs
+                .push(GameLog(format!("enemy {} died.", self.stage_index)));
+            self.bullets.retain(|b| b.is_player);
+        } else {
+            self.bullets.extend(self.enemy.bullets());
+            self.enemy.hurt(&mut self.bullets);
+        }
 
         self.bullets.retain(|b| !b.will_remove);
     }
