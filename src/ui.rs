@@ -1,9 +1,14 @@
+use std::borrow::Borrow;
+
 use ratatui::{
     prelude::*,
     widgets::{canvas::Canvas, Block, BorderType, List},
 };
 
-use crate::app::{App, GameLog};
+use crate::{
+    app::{App, GameLog},
+    battle::{DrawEnemy, Enemy},
+};
 
 /// Renders the user interface widgets.
 pub fn render(app: &mut App, frame: &mut Frame) {
@@ -60,6 +65,7 @@ fn render_game_screen(app: &mut App, frame: &mut Frame, area: Rect) {
                     .border_type(BorderType::Rounded),
             )
             .paint(|ctx| {
+                ctx.draw(&DrawEnemy(&app.enemy));
                 ctx.draw(&app.player);
                 for b in &app.bullets {
                     ctx.draw(b);

@@ -1,8 +1,13 @@
-use std::{error, time::Duration};
+use std::{error, fmt::Debug, time::Duration};
 
 use ratatui::{
     style::Color,
     widgets::canvas::{self, Circle, Points, Shape},
+};
+
+use crate::{
+    battle::{Enemy, EnemyLevel0},
+    norm,
 };
 
 /// Application result type.
@@ -28,16 +33,6 @@ pub enum GameEvent {
     Shoot,
 }
 
-fn norm(x: f64, y: f64) -> (f64, f64) {
-    const EPSILON: f64 = 0.0001;
-    let m = x * x + y * y;
-    if m < EPSILON {
-        return (0., 0.);
-    }
-    let m = m.sqrt();
-    (x / m, y / m)
-}
-
 impl Player {
     pub fn walk(&mut self, delta_x: f64, delta_y: f64) -> AppResult<()> {
         self.pos_x += delta_x;
@@ -60,6 +55,7 @@ impl Player {
             pos_y: self.pos_y + self.face_y * BULLET_OFFSET,
             velocity_x: self.face_x * BULLET_VELOCITY,
             velocity_y: self.face_y * BULLET_VELOCITY,
+            is_player: true,
         }
     }
 }
@@ -82,13 +78,18 @@ pub struct Bullet {
     pub pos_y: f64,
     pub velocity_x: f64,
     pub velocity_y: f64,
+    pub is_player: bool,
 }
 
 impl Shape for Bullet {
     fn draw(&self, painter: &mut canvas::Painter) {
         let points = Points {
             coords: &[(self.pos_x, self.pos_y)],
-            color: Color::Yellow,
+            color: if self.is_player {
+                Color::Yellow
+            } else {
+                Color::Red
+            },
         };
         points.draw(painter);
     }
@@ -107,6 +108,8 @@ pub struct App {
     pub logs: Vec<GameLog>,
     pub bullets: Vec<Bullet>,
     pub events: Vec<GameEvent>,
+    pub screen_width: f64,
+    pub enemy: Box<dyn Enemy>,
 }
 
 impl Default for App {
@@ -119,6 +122,8 @@ impl Default for App {
                 ..Player::default()
             },
             stage_index: 0,
+            enemy: Box::new(EnemyLevel0::new()),
+            screen_width: 100.,
             logs: vec![],
             bullets: vec![],
             events: vec![],
@@ -169,6 +174,10 @@ impl App {
 
             // TODO: check collision
         }
+
+        // enemy
+        self.enemy.tick(delta, &mut self.player).unwrap();
+        self.bullets.extend(self.enemy.bullets());
     }
 
     /// Set running to false to quit the application.
