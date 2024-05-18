@@ -53,6 +53,9 @@ fn render_game_screen(app: &mut App, frame: &mut Frame, area: Rect) {
             )
             .paint(|ctx| {
                 ctx.draw(&app.player);
+                for b in &app.bullets {
+                    ctx.draw(b);
+                }
             })
             .x_bounds([-x_size, x_size])
             .y_bounds([-y_size, y_size]),

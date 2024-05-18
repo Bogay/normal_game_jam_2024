@@ -2,9 +2,9 @@ use normal_game_jam_2024::app::{App, AppResult};
 use normal_game_jam_2024::event::{Event, EventHandler};
 use normal_game_jam_2024::handler::handle_key_events;
 use normal_game_jam_2024::tui::Tui;
-use std::io;
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
+use std::io;
 
 fn main() -> AppResult<()> {
     // Create an application.
@@ -23,7 +23,7 @@ fn main() -> AppResult<()> {
         tui.draw(&mut app)?;
         // Handle events.
         match tui.events.next()? {
-            Event::Tick => app.tick(),
+            Event::Tick(delta) => app.tick(delta),
             Event::Key(key_event) => handle_key_events(key_event, &mut app)?,
             Event::Mouse(_) => {}
             Event::Resize(_, _) => {}

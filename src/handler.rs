@@ -14,18 +14,22 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
                 app.quit();
             }
         }
-        // Counter handlers
+        // Move handlers
         KeyCode::Right => {
-            app.player.walk(1, 0).unwrap();
+            app.player.walk(1., 0.).unwrap();
         }
         KeyCode::Left => {
-            app.player.walk(-1, 0).unwrap();
+            app.player.walk(-1., 0.).unwrap();
         }
         KeyCode::Up => {
-            app.player.walk(0, 1).unwrap();
+            app.player.walk(0., 1.).unwrap();
         }
         KeyCode::Down => {
-            app.player.walk(0, -1).unwrap();
+            app.player.walk(0., -1.).unwrap();
+        }
+        KeyCode::Char(' ') => {
+            let bullet = app.player.new_bullet();
+            app.bullets.push(bullet);
         }
         // Other handlers you could add here.
         _ => {}
