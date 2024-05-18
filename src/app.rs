@@ -7,7 +7,7 @@ use ratatui::{
 
 use crate::{
     battle::{Enemy, EnemyLevel0},
-    norm,
+    dis, norm,
 };
 
 /// Application result type.
@@ -24,6 +24,7 @@ pub struct Player {
     pub mp: isize,
     pub max_mp: isize,
     pub move_velocity: f64,
+    pub size: f64,
 }
 
 /// In-game events
@@ -56,6 +57,7 @@ impl Player {
             velocity_x: self.face_x * BULLET_VELOCITY,
             velocity_y: self.face_y * BULLET_VELOCITY,
             is_player: true,
+            ..Default::default()
         }
     }
 }
@@ -65,20 +67,21 @@ impl Shape for Player {
         let circle = Circle {
             x: self.pos_x,
             y: self.pos_y,
-            radius: 2.,
+            radius: self.size,
             color: Color::White,
         };
         circle.draw(painter);
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Bullet {
     pub pos_x: f64,
     pub pos_y: f64,
     pub velocity_x: f64,
     pub velocity_y: f64,
     pub is_player: bool,
+    pub will_remove: bool,
 }
 
 impl Shape for Bullet {
@@ -117,8 +120,13 @@ impl Default for App {
         Self {
             running: true,
             player: Player {
+                max_hp: 100,
+                hp: 100,
+                max_mp: 50,
+                mp: 50,
                 move_velocity: 6.,
                 face_x: 1.,
+                size: 2.,
                 ..Player::default()
             },
             stage_index: 0,
@@ -172,12 +180,20 @@ impl App {
             b.pos_x += b.velocity_x * delta.as_secs_f64();
             b.pos_y += b.velocity_y * delta.as_secs_f64();
 
-            // TODO: check collision
+            // check collision for player, enemy should do this in their own impl
+            if !b.is_player
+                && dis(b.pos_x, b.pos_y, self.player.pos_x, self.player.pos_y) <= self.player.size
+            {
+                b.will_remove = true;
+                self.player.hp -= 1;
+            }
         }
 
         // enemy
         self.enemy.tick(delta, &mut self.player).unwrap();
         self.bullets.extend(self.enemy.bullets());
+
+        self.bullets.retain(|b| !b.will_remove);
     }
 
     /// Set running to false to quit the application.
