@@ -1,6 +1,6 @@
 use ratatui::{
     prelude::*,
-    widgets::{Block, BorderType, List, Paragraph},
+    widgets::{canvas::Canvas, Block, BorderType, List},
 };
 
 use crate::app::App;
@@ -14,23 +14,10 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
     let [game_screen, info_panel] =
         Layout::horizontal([Constraint::Fill(1), Constraint::Length(32)]).areas(frame.size());
-
     let [stage_screen, logs] =
         Layout::vertical([Constraint::Fill(1), Constraint::Length(10)]).areas(game_screen);
 
-    // stage screen
-    frame.render_widget(
-        Paragraph::new("")
-            .block(
-                Block::bordered()
-                    .title("Normal Game Jam 2024")
-                    .title_alignment(Alignment::Center)
-                    .border_type(BorderType::Rounded),
-            )
-            .style(Style::default().fg(Color::Cyan).bg(Color::Black))
-            .centered(),
-        stage_screen,
-    );
+    render_game_screen(app, frame, stage_screen);
 
     // player info
     frame.render_widget(
@@ -49,6 +36,28 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     );
 
     render_game_logs(app, frame, logs);
+}
+
+fn render_game_screen(app: &mut App, frame: &mut Frame, area: Rect) {
+    let x_size = 100.;
+    let y_size = x_size * (area.height as f64 / area.width as f64);
+
+    frame.render_widget(
+        Canvas::default()
+            .marker(Marker::Braille)
+            .block(
+                Block::bordered()
+                    .title("Normal Game Jam 2024")
+                    .title_alignment(Alignment::Center)
+                    .border_type(BorderType::Rounded),
+            )
+            .paint(|ctx| {
+                ctx.draw(&app.player);
+            })
+            .x_bounds([-x_size, x_size])
+            .y_bounds([-y_size, y_size]),
+        area,
+    );
 }
 
 fn render_game_logs(_app: &mut App, frame: &mut Frame, area: Rect) {

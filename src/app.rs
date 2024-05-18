@@ -1,5 +1,10 @@
 use std::error;
 
+use ratatui::{
+    style::Color,
+    widgets::canvas::{self, Circle, Shape},
+};
+
 /// Application result type.
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
@@ -19,6 +24,18 @@ impl Player {
         self.pos_y += delta_y;
 
         Ok(())
+    }
+}
+
+impl Shape for Player {
+    fn draw(&self, painter: &mut canvas::Painter) {
+        let circle = Circle {
+            x: f64::try_from(self.pos_x as i32).unwrap(),
+            y: f64::try_from(self.pos_y as i32).unwrap(),
+            radius: 1.,
+            color: Color::White,
+        };
+        circle.draw(painter);
     }
 }
 

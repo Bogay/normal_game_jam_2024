@@ -22,10 +22,10 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
             app.player.walk(-1, 0).unwrap();
         }
         KeyCode::Up => {
-            app.player.walk(0, -1).unwrap();
+            app.player.walk(0, 1).unwrap();
         }
         KeyCode::Down => {
-            app.player.walk(0, 1).unwrap();
+            app.player.walk(0, -1).unwrap();
         }
         // Other handlers you could add here.
         _ => {}
