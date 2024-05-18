@@ -31,3 +31,16 @@ pub(crate) fn dis(x0: f64, y0: f64, x1: f64, y1: f64) -> f64 {
 
     (dx * dx + dy * dy).sqrt()
 }
+
+use std::f64::consts::PI;
+
+pub(crate) fn rotate_vector(x: f64, y: f64, degrees: f64) -> (f64, f64) {
+    let radians = degrees * PI / 180.0;
+    let cos_theta = radians.cos();
+    let sin_theta = radians.sin();
+
+    let x_new = x * cos_theta - y * sin_theta;
+    let y_new = x * sin_theta + y * cos_theta;
+
+    (x_new, y_new)
+}

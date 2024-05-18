@@ -6,7 +6,7 @@ use ratatui::{
 };
 
 use crate::{
-    battle::{Enemy, EnemyAction, EnemyLevel0},
+    battle::{Enemy, EnemyAction, EnemyLevel0, EnemyLevel1},
     dis, norm,
 };
 
@@ -74,7 +74,7 @@ impl Shape for Player {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Bullet {
     pub pos_x: f64,
     pub pos_y: f64,
@@ -130,7 +130,7 @@ impl Default for App {
                 ..Player::default()
             },
             stage_index: 0,
-            enemy: Box::new(EnemyLevel0::new()),
+            enemy: Box::new(EnemyLevel1::new()),
             screen_width: 100.,
             logs: vec![],
             bullets: vec![],

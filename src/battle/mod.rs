@@ -1,5 +1,7 @@
 mod lv0;
 pub use lv0::EnemyLevel0;
+mod lv1;
+pub use lv1::EnemyLevel1;
 
 use crate::app::{AppResult, Bullet, Player};
 use ratatui::widgets::canvas::Shape;
