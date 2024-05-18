@@ -6,7 +6,7 @@ use ratatui::{
 };
 
 use crate::{
-    battle::{Enemy, EnemyAction, EnemyLevel0, EnemyLevel1},
+    battle::{Enemy, EnemyAction, EnemyLevel0, EnemyLevel1, EnemyLevel2},
     dis, norm,
 };
 
@@ -139,7 +139,7 @@ impl Default for App {
                 ..Player::default()
             },
             stage_index: 0,
-            enemy: Box::new(EnemyLevel1::new()),
+            enemy: Box::new(EnemyLevel2::new()),
             screen_width: 100.,
             logs: vec![],
             bullets: vec![],
