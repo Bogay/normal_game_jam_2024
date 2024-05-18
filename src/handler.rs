@@ -1,4 +1,4 @@
-use crate::app::{App, AppResult};
+use crate::app::{App, AppResult, GameEvent};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 /// Handles the key events and updates the state of [`App`].
@@ -16,20 +16,19 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
         }
         // Move handlers
         KeyCode::Right => {
-            app.player.walk(1., 0.).unwrap();
+            app.events.push(GameEvent::PlayerMove(1., 0.));
         }
         KeyCode::Left => {
-            app.player.walk(-1., 0.).unwrap();
+            app.events.push(GameEvent::PlayerMove(-1., 0.));
         }
         KeyCode::Up => {
-            app.player.walk(0., 1.).unwrap();
+            app.events.push(GameEvent::PlayerMove(0., 1.));
         }
         KeyCode::Down => {
-            app.player.walk(0., -1.).unwrap();
+            app.events.push(GameEvent::PlayerMove(0., -1.));
         }
         KeyCode::Char(' ') => {
-            let bullet = app.player.new_bullet();
-            app.bullets.push(bullet);
+            app.events.push(GameEvent::Shoot);
         }
         // Other handlers you could add here.
         _ => {}

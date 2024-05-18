@@ -3,7 +3,7 @@ use ratatui::{
     widgets::{canvas::Canvas, Block, BorderType, List},
 };
 
-use crate::app::App;
+use crate::app::{App, GameLog};
 
 /// Renders the user interface widgets.
 pub fn render(app: &mut App, frame: &mut Frame) {
@@ -17,6 +17,11 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     let [stage_screen, logs] =
         Layout::vertical([Constraint::Fill(1), Constraint::Length(10)]).areas(game_screen);
 
+    app.logs.clear();
+    for a in &[game_screen, info_panel, stage_screen, logs] {
+        app.logs.push(GameLog(format!("{a:?}")));
+    }
+
     render_game_screen(app, frame, stage_screen);
 
     // player info
@@ -24,7 +29,10 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         List::new([
             Line::raw(format!("HP: {}/{}", app.player.hp, app.player.max_hp)),
             Line::raw(format!("MP: {}/{}", app.player.mp, app.player.max_mp)),
-            Line::raw(format!("Pos: ({}, {})", app.player.pos_x, app.player.pos_y)),
+            Line::raw(format!(
+                "Pos: ({:.2}, {:.2})",
+                app.player.pos_x, app.player.pos_y
+            )),
         ])
         .block(
             Block::bordered()
@@ -40,7 +48,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 
 fn render_game_screen(app: &mut App, frame: &mut Frame, area: Rect) {
     let x_size = 100.;
-    let y_size = x_size * (area.height as f64 / area.width as f64);
+    let y_size = x_size * (area.height as f64 / area.width as f64) * App::CHAR_RATIO;
 
     frame.render_widget(
         Canvas::default()
@@ -63,9 +71,9 @@ fn render_game_screen(app: &mut App, frame: &mut Frame, area: Rect) {
     );
 }
 
-fn render_game_logs(_app: &mut App, frame: &mut Frame, area: Rect) {
+fn render_game_logs(app: &mut App, frame: &mut Frame, area: Rect) {
     frame.render_widget(
-        List::new([Line::raw("log0"), Line::raw("log0")]).block(
+        List::new(app.logs.iter().map(|l| Line::raw(&l.0))).block(
             Block::bordered()
                 .title("Logs")
                 .title_alignment(Alignment::Left)
