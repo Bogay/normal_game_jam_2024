@@ -44,3 +44,11 @@ pub(crate) fn rotate_vector(x: f64, y: f64, degrees: f64) -> (f64, f64) {
 
     (x_new, y_new)
 }
+
+pub(crate) fn map_range(min_s: f64, max_s: f64, min_t: f64, max_t: f64, t: f64) -> f64 {
+    let diff_s = max_s - min_s;
+    let diff_t = max_t - min_t;
+
+    let ratio = (t - min_t) / diff_t;
+    min_s + (diff_s * ratio)
+}

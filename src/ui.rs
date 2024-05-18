@@ -22,11 +22,6 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     let [stage_screen, logs] =
         Layout::vertical([Constraint::Fill(1), Constraint::Length(10)]).areas(game_screen);
 
-    // app.logs.clear();
-    // for a in &[game_screen, info_panel, stage_screen, logs] {
-    //     app.logs.push(GameLog(format!("{a:?}")));
-    // }
-
     render_game_screen(app, frame, stage_screen);
 
     // player info
@@ -52,8 +47,11 @@ pub fn render(app: &mut App, frame: &mut Frame) {
 }
 
 fn render_game_screen(app: &mut App, frame: &mut Frame, area: Rect) {
-    let x_size = 100.;
+    let x_size = app.world_width;
     let y_size = x_size * (area.height as f64 / area.width as f64) * App::CHAR_RATIO;
+
+    // HACK: modify data in rendering logic
+    app.canvas_rect = area;
 
     frame.render_widget(
         Canvas::default()
@@ -82,7 +80,14 @@ fn render_game_screen(app: &mut App, frame: &mut Frame, area: Rect) {
 
 fn render_game_logs(app: &mut App, frame: &mut Frame, area: Rect) {
     frame.render_widget(
-        List::new(app.logs.iter().map(|l| Line::raw(&l.0))).block(
+        List::new(
+            app.logs
+                .iter()
+                .rev()
+                .map(|l| Line::raw(&l.0))
+                .take(area.height as usize),
+        )
+        .block(
             Block::bordered()
                 .title("Logs")
                 .title_alignment(Alignment::Left)

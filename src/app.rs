@@ -1,6 +1,8 @@
 use std::{error, fmt::Debug, time::Duration};
 
+use crossterm::event::{MouseEvent, MouseEventKind};
 use ratatui::{
+    layout::Rect,
     style::Color,
     widgets::canvas::{self, Circle, Points, Shape},
 };
@@ -30,8 +32,10 @@ pub struct Player {
 /// In-game events
 #[derive(Debug)]
 pub enum GameEvent {
+    /// move to direction
     PlayerMove(f64, f64),
-    Shoot,
+    /// shoot aim to direction
+    Shoot(f64, f64),
 }
 
 impl Player {
@@ -48,14 +52,19 @@ impl Player {
         Ok(())
     }
 
-    pub fn new_bullet(&self) -> Bullet {
+    /// Create a bullet aim to (sx, sy)
+    pub fn new_bullet(&self, sx: f64, sy: f64) -> Bullet {
         const BULLET_VELOCITY: f64 = 12.;
         const BULLET_OFFSET: f64 = 1.5;
+
+        let delta_x = sx - self.pos_x;
+        let delta_y = sy - self.pos_y;
+        let (delta_x, delta_y) = norm(delta_x, delta_y);
         Bullet {
-            pos_x: self.pos_x + self.face_x * BULLET_OFFSET,
-            pos_y: self.pos_y + self.face_y * BULLET_OFFSET,
-            velocity_x: self.face_x * BULLET_VELOCITY,
-            velocity_y: self.face_y * BULLET_VELOCITY,
+            pos_x: self.pos_x + delta_x * BULLET_OFFSET,
+            pos_y: self.pos_y + delta_y * BULLET_OFFSET,
+            velocity_x: delta_x * BULLET_VELOCITY,
+            velocity_y: delta_y * BULLET_VELOCITY,
             is_player: true,
             ..Default::default()
         }
@@ -120,8 +129,10 @@ pub struct App {
     pub logs: Vec<GameLog>,
     pub bullets: Vec<Bullet>,
     pub events: Vec<GameEvent>,
-    pub screen_width: f64,
+    pub world_width: f64,
     pub enemy: Box<dyn Enemy>,
+    // hack for calculate player shoot direction
+    pub canvas_rect: Rect,
 }
 
 impl Default for App {
@@ -140,10 +151,11 @@ impl Default for App {
             },
             stage_index: 0,
             enemy: create_enemy(0).unwrap(),
-            screen_width: 100.,
+            world_width: 100.,
             logs: vec![],
             bullets: vec![],
             events: vec![],
+            canvas_rect: Rect::default(),
         }
     }
 }
@@ -161,7 +173,7 @@ impl App {
         // player
         let mut player_move_x = 0.;
         let mut player_move_y = 0.;
-        let mut shoot = false;
+        let mut shoot = None;
 
         for evt in self.events.drain(..) {
             match evt {
@@ -169,8 +181,8 @@ impl App {
                     player_move_x += x;
                     player_move_y += y;
                 }
-                GameEvent::Shoot => {
-                    shoot = true;
+                GameEvent::Shoot(x, y) => {
+                    shoot = Some((x, y));
                 }
             }
         }
@@ -179,9 +191,11 @@ impl App {
         player_move_y *= self.player.move_velocity * delta.as_secs_f64();
         self.player.walk(player_move_x, player_move_y).unwrap();
 
-        if shoot {
-            let bullet = self.player.new_bullet();
+        if let Some((sx, sy)) = shoot {
+            let bullet = self.player.new_bullet(sx, sy);
             self.bullets.push(bullet);
+            self.logs
+                .push(GameLog(format!("Shoot pos=({:.2}, {:.2})", sx, sy)));
         }
 
         // bullets
@@ -224,5 +238,55 @@ impl App {
     /// Set running to false to quit the application.
     pub fn quit(&mut self) {
         self.running = false;
+    }
+
+    pub fn on_mouse_event(&mut self, evt: MouseEvent) -> AppResult<()> {
+        match evt.kind {
+            MouseEventKind::Down(_btn) => {
+                // self.logs.push(GameLog(format!(
+                //     "Mouse down btn={btn:?}, pos=({}, {})",
+                //     evt.row, evt.column
+                // )));
+            }
+            MouseEventKind::Up(_btn) => {
+                let x_size = self.world_width;
+                let y_size = x_size
+                    * (self.canvas_rect.height as f64 / self.canvas_rect.width as f64)
+                    * App::CHAR_RATIO;
+
+                let x_bound = [-x_size, x_size];
+                let y_bound = [-y_size, y_size];
+                let x_grid_bound = [
+                    self.canvas_rect.x,
+                    self.canvas_rect.x + self.canvas_rect.width,
+                ];
+                let y_grid_bound = [
+                    self.canvas_rect.y,
+                    self.canvas_rect.y + self.canvas_rect.height,
+                ];
+
+                let grid_x = evt.column - self.canvas_rect.x;
+                let grid_y = evt.row - self.canvas_rect.y;
+
+                let click_x = crate::map_range(
+                    x_bound[0],
+                    x_bound[1],
+                    x_grid_bound[0] as f64,
+                    x_grid_bound[1] as f64,
+                    grid_x as f64,
+                );
+                let click_y = crate::map_range(
+                    y_bound[1],
+                    y_bound[0],
+                    y_grid_bound[0] as f64,
+                    y_grid_bound[1] as f64,
+                    grid_y as f64,
+                );
+                self.events.push(GameEvent::Shoot(click_x, click_y));
+            }
+            _ => {}
+        }
+
+        Ok(())
     }
 }

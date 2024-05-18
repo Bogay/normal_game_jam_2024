@@ -25,7 +25,7 @@ fn main() -> AppResult<()> {
         match tui.events.next()? {
             Event::Tick(delta) => app.tick(delta),
             Event::Key(key_event) => handle_key_events(key_event, &mut app)?,
-            Event::Mouse(_) => {}
+            Event::Mouse(mouse_event) => app.on_mouse_event(mouse_event)?,
             Event::Resize(_, _) => {}
         }
     }
