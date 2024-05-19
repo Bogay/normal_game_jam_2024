@@ -10,13 +10,22 @@ fn main() {
 fn build_our_ffi() {
     println!("cargo:rerun-if-changed=src/ffi");
 
+    // Write the bindings to the $OUT_DIR/bindings.rs file.
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let dll_path = PathBuf::from("src/ffi/libentry.lib");
+    if dll_path.exists() {
+        std::fs::copy(dll_path, out_path.join("libentry.lib")).unwrap();
+        println!("cargo:rustc-link-search={}", out_path.display());
+        println!("cargo:rustc-link-lib=libentry");
+    }
+
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
     // the resulting bindings.
     let bindings = bindgen::Builder::default()
         // The input header we would like to generate
         // bindings for.
-        .header("src/ffi/bullet.h")
+        .header("src/ffi/bullet.hpp")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))

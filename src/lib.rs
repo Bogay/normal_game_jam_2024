@@ -26,6 +26,7 @@ mod gen {
 
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
+
 use gen::create_bullet;
 use gen::Bullet as BulletInfo;
 use gen::RGBA as Rgba;

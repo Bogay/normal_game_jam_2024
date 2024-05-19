@@ -194,6 +194,21 @@ impl App {
         player_move_y *= self.player.move_velocity * delta.as_secs_f64();
         self.player.walk(player_move_x, player_move_y).unwrap();
 
+        // TODO: check skill
+        let c_strings = self
+            .player
+            .skills
+            .iter()
+            .map(|s| std::ffi::CString::new(s.name.clone()).unwrap())
+            .collect::<Vec<_>>();
+        let c_char_ptrs = c_strings
+            .iter()
+            .map(|s| s.as_ptr())
+            .collect::<Vec<*const std::os::raw::c_char>>();
+        let bullet_info =
+            unsafe { crate::create_bullet(c_char_ptrs.as_ptr(), c_char_ptrs.len() as i32) };
+        self.logs.push(GameLog(format!("{bullet_info:?}")));
+
         if let Some((sx, sy)) = shoot {
             // TODO: check skill
 
