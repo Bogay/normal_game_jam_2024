@@ -1,4 +1,5 @@
 #include <stdbool.h>
+
 #pragma pack(1)
 typedef struct __RGBA__
 {
@@ -18,3 +19,5 @@ typedef struct __Bullet__
     int mp_cost;
 } Bullet;
 #pragma unpack()
+
+Bullet *create_bullet(char **spell, int cnt);

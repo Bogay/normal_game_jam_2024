@@ -15,6 +15,19 @@ pub mod handler;
 
 mod battle;
 mod skill;
+mod speech_recog;
+
+// generated binding
+mod gen {
+    #![allow(non_upper_case_globals)]
+    #![allow(non_camel_case_types)]
+    #![allow(non_snake_case)]
+
+    include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+}
+use gen::create_bullet;
+use gen::Bullet as BulletInfo;
+use gen::RGBA as Rgba;
 
 /// Some math-related functions
 

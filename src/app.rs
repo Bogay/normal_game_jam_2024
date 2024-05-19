@@ -132,6 +132,7 @@ pub struct App {
     pub events: Vec<GameEvent>,
     pub world_width: f64,
     pub enemy: Box<dyn Enemy>,
+    pub casting: bool,
     // hack for calculate player shoot direction
     pub canvas_rect: Rect,
 }
@@ -157,6 +158,7 @@ impl Default for App {
             bullets: vec![],
             events: vec![],
             canvas_rect: Rect::default(),
+            casting: false,
         }
     }
 }
@@ -193,6 +195,8 @@ impl App {
         self.player.walk(player_move_x, player_move_y).unwrap();
 
         if let Some((sx, sy)) = shoot {
+            // TODO: check skill
+
             if self.player.mp <= 0 {
                 self.logs.push(GameLog("not enough MP".to_string()));
             } else {
@@ -202,6 +206,8 @@ impl App {
                     .push(GameLog(format!("shoot pos=({:.2}, {:.2})", sx, sy)));
                 self.player.mp -= 1;
             }
+
+            self.player.skills.clear();
         }
 
         // bullets
@@ -250,10 +256,8 @@ impl App {
     pub fn on_mouse_event(&mut self, evt: MouseEvent) -> AppResult<()> {
         match evt.kind {
             MouseEventKind::Down(_btn) => {
-                // self.logs.push(GameLog(format!(
-                //     "Mouse down btn={btn:?}, pos=({}, {})",
-                //     evt.row, evt.column
-                // )));
+                self.casting = true;
+                self.logs.push(GameLog("casting...".to_string()));
             }
             MouseEventKind::Up(_btn) => {
                 let x_size = self.world_width;

@@ -1,14 +1,9 @@
-use std::borrow::Borrow;
-
 use ratatui::{
     prelude::*,
     widgets::{canvas::Canvas, Block, BorderType, List},
 };
 
-use crate::{
-    app::{App, GameLog},
-    battle::{DrawEnemy, Enemy},
-};
+use crate::{app::App, battle::DrawEnemy};
 
 /// Renders the user interface widgets.
 pub fn render(app: &mut App, frame: &mut Frame) {
@@ -23,27 +18,32 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         Layout::vertical([Constraint::Fill(1), Constraint::Length(10)]).areas(game_screen);
 
     render_game_screen(app, frame, stage_screen);
+    render_player_info(app, frame, info_panel);
+    render_game_logs(app, frame, logs);
+}
 
-    // player info
+fn render_player_info(app: &mut App, frame: &mut Frame, area: Rect) {
     frame.render_widget(
-        List::new([
-            Line::raw(format!("HP: {}/{}", app.player.hp, app.player.max_hp)),
-            Line::raw(format!("MP: {}/{}", app.player.mp, app.player.max_mp)),
-            Line::raw(format!(
-                "Pos: ({:.2}, {:.2})",
-                app.player.pos_x, app.player.pos_y
-            )),
-        ])
+        List::new(
+            [
+                Line::raw(format!("HP: {}/{}", app.player.hp, app.player.max_hp)),
+                Line::raw(format!("MP: {}/{}", app.player.mp, app.player.max_mp)),
+                Line::raw(format!(
+                    "Pos: ({:.2}, {:.2})",
+                    app.player.pos_x, app.player.pos_y
+                )),
+            ]
+            .into_iter()
+            .chain(app.player.skills.iter().map(|s| Line::raw(&s.name))),
+        )
         .block(
             Block::bordered()
                 .title("Player Info")
                 .title_alignment(Alignment::Center)
                 .border_type(BorderType::Rounded),
         ),
-        info_panel,
+        area,
     );
-
-    render_game_logs(app, frame, logs);
 }
 
 fn render_game_screen(app: &mut App, frame: &mut Frame, area: Rect) {
