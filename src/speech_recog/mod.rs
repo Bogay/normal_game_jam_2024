@@ -4,7 +4,7 @@ use std::sync::mpsc::channel;
 use std::time::Duration;
 use vosk::{DecodingState, Model, Recognizer};
 
-fn record_speech() {
+pub fn record_speech() {
     let host = cpal::default_host();
     let device = host
         .default_input_device()
@@ -26,7 +26,7 @@ fn record_speech() {
     let read_audio_handle = {
         let sender = sender.clone();
         std::thread::spawn(move || {
-            let input_stream = device
+            let input_stream: cpal::Stream = device
                 .build_input_stream(
                     &config,
                     move |data: &[i16], _info| {

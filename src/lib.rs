@@ -16,6 +16,7 @@ pub mod handler;
 mod battle;
 mod skill;
 mod speech_recog;
+pub use speech_recog::record_speech;
 
 // generated binding
 mod gen {
