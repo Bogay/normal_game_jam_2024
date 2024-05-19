@@ -1,10 +1,13 @@
-use std::{error, fmt::Debug, time::Duration};
-
 use crossterm::event::{MouseEvent, MouseEventKind};
 use ratatui::{
     layout::Rect,
     style::Color,
     widgets::canvas::{self, Circle, Points, Shape},
+};
+use std::{
+    error,
+    fmt::Debug,
+    time::{Duration, Instant},
 };
 
 use crate::{
@@ -15,7 +18,7 @@ use crate::{
 /// Application result type.
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Player {
     pub pos_x: f64,
     pub pos_y: f64,
@@ -28,6 +31,28 @@ pub struct Player {
     pub move_velocity: f64,
     pub size: f64,
     pub skills: Vec<Skill>,
+    pub shoot_timer: Instant,
+    pub shoot_cooldown: Duration,
+}
+
+impl Default for Player {
+    fn default() -> Self {
+        Self {
+            max_hp: 100,
+            hp: 100,
+            max_mp: 50,
+            mp: 50,
+            move_velocity: 6.,
+            face_x: 1.,
+            size: 2.,
+            pos_x: 0.,
+            pos_y: 0.,
+            face_y: 0.,
+            skills: vec![],
+            shoot_timer: Instant::now(),
+            shoot_cooldown: Duration::from_secs_f64(0.5),
+        }
+    }
 }
 
 /// In-game events
@@ -141,16 +166,7 @@ impl Default for App {
     fn default() -> Self {
         Self {
             running: true,
-            player: Player {
-                max_hp: 100,
-                hp: 100,
-                max_mp: 50,
-                mp: 50,
-                move_velocity: 6.,
-                face_x: 1.,
-                size: 2.,
-                ..Player::default()
-            },
+            player: Player::default(),
             stage_index: 0,
             enemy: create_enemy(0).unwrap(),
             world_width: 100.,
@@ -193,22 +209,7 @@ impl App {
         player_move_x *= self.player.move_velocity * delta.as_secs_f64();
         player_move_y *= self.player.move_velocity * delta.as_secs_f64();
         self.player.walk(player_move_x, player_move_y).unwrap();
-
-        if let Some((sx, sy)) = shoot {
-            // TODO: check skill
-
-            if self.player.mp <= 0 {
-                self.logs.push(GameLog("not enough MP".to_string()));
-            } else {
-                let bullet = self.player.new_bullet(sx, sy);
-                self.bullets.push(bullet);
-                self.logs
-                    .push(GameLog(format!("shoot pos=({:.2}, {:.2})", sx, sy)));
-                self.player.mp -= 1;
-            }
-
-            self.player.skills.clear();
-        }
+        self.check_player_shoot(shoot);
 
         // bullets
         for b in &mut self.bullets {
@@ -246,6 +247,31 @@ impl App {
         }
 
         self.bullets.retain(|b| !b.will_remove);
+    }
+
+    fn check_player_shoot(&mut self, shoot: Option<(f64, f64)>) {
+        let Some((sx, sy)) = shoot else { return };
+
+        if self.player.shoot_timer.elapsed() < self.player.shoot_cooldown {
+            self.logs
+                .push(GameLog("spell still in cooldown".to_string()));
+            return;
+        }
+        self.player.shoot_timer = Instant::now();
+
+        // TODO: check skill
+
+        if self.player.mp <= 0 {
+            self.logs.push(GameLog("not enough MP".to_string()));
+        } else {
+            let bullet = self.player.new_bullet(sx, sy);
+            self.bullets.push(bullet);
+            self.logs
+                .push(GameLog(format!("shoot pos=({:.2}, {:.2})", sx, sy)));
+            self.player.mp -= 1;
+        }
+
+        self.player.skills.clear();
     }
 
     /// Set running to false to quit the application.
