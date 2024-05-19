@@ -6,6 +6,8 @@ use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 use std::io;
 
+use normal_game_jam_2024::record_speech;
+
 fn main() -> AppResult<()> {
     // Create an application.
     let mut app = App::new();

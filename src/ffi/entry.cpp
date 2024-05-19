@@ -8,7 +8,7 @@ Bullet *init_bullet()
     b->color.r = 0xFF;
     b->color.g = 0xFF;
     b->color.b = 0xFF;
-    
+
     b->count = 1;
     b->damage = 1;
     b->damage_by_frame = false;
@@ -18,14 +18,13 @@ Bullet *init_bullet()
 
     return b;
 }
-extern "C" void c_create_bullet(Bullet* bullet);
-extern void cpp_create_bullet(Bullet* bullet, int stacking);
+extern "C" void c_create_bullet(Bullet *bullet);
+extern void cpp_create_bullet(Bullet *bullet, int stacking);
 #include "go/go_ffi.h"
-extern "C" void py_create_bullet(Bullet* bullet);
+extern "C" void py_create_bullet(Bullet *bullet);
 
-__declspec(dllexport) Bullet *create_bullet(char **spell, int cnt)
+__declspec(dllexport) Bullet *create_bullet(const char *const *spell, int cnt)
 {
-
     if (cnt == 0)
         return nullptr;
     puts("create bullet");

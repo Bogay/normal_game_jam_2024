@@ -20,4 +20,4 @@ typedef struct __Bullet__
 } Bullet;
 #pragma unpack()
 
-Bullet *create_bullet(char **spell, int cnt);
+__declspec(dllexport) Bullet *create_bullet(const char *const *spell, int cnt);

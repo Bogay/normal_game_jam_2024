@@ -1,49 +1,45 @@
-use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::{Sample, StreamConfig};
+use portaudio as pa;
 use std::sync::mpsc::channel;
 use std::time::Duration;
 use vosk::{DecodingState, Model, Recognizer};
 
-fn record_speech() {
-    let host = cpal::default_host();
-    let device = host
-        .default_input_device()
-        .expect("failed to get default input device");
-    let config = device
-        .default_input_config()
-        .expect("Failed to get default input config")
-        .config();
+const SAMPLE_RATE: f64 = 16000.;
+const FRAMES: u32 = 8192;
+
+pub fn record_speech() {
+    let pa = pa::PortAudio::new().unwrap();
+    let def_input = pa.default_input_device().unwrap();
+    let input_info = pa.device_info(def_input).unwrap();
+    let latency = input_info.default_low_input_latency;
+    let input_params = pa::StreamParameters::new(def_input, 1, true, latency);
+    pa.is_input_format_supported(input_params, SAMPLE_RATE)
+        .unwrap();
+    let settings = pa::InputStreamSettings::new(input_params, SAMPLE_RATE, FRAMES);
 
     let model_path = "./vosk-model-small-en-us-0.15";
     let model = Model::new(model_path).unwrap();
-    let mut recognizer = Recognizer::new(&model, config.sample_rate.0 as f32).unwrap();
-    // recognizer.set_max_alternatives(10);
-    // recognizer.set_words(true);
-    // recognizer.set_partial_words(true);
+    let mut recognizer = Recognizer::new(&model, SAMPLE_RATE as f32).unwrap();
+    recognizer.set_words(true);
+    recognizer.set_partial_words(true);
 
     let (sender, receiver) = channel();
 
-    let read_audio_handle = {
-        let sender = sender.clone();
-        std::thread::spawn(move || {
-            let input_stream = device
-                .build_input_stream(
-                    &config,
-                    move |data: &[i16], _info| {
-                        let data = data.to_vec();
-                        sender.send(data).expect("failed to send audio data");
-                    },
-                    |err| {
-                        eprintln!("audio input err: {err}");
-                    },
-                    None,
-                )
-                .expect("failed to build input stream");
-            input_stream.play().expect("failed to play input");
+    // A callback to pass to the non-blocking stream.
+    let callback = move |pa::InputStreamCallbackArgs { buffer, frames, .. }| {
+        assert!(frames == FRAMES as usize);
+        sender.send(buffer.to_vec()).unwrap();
+        pa::Continue
+    };
 
-            loop {
+    let read_audio_handle = {
+        // let sender = sender.clone();
+        std::thread::spawn(move || {
+            let mut stream = pa.open_non_blocking_stream(settings, callback).unwrap();
+            stream.start().unwrap();
+            while stream.is_active().unwrap() {
                 std::thread::sleep(Duration::from_secs(30));
             }
+            stream.stop().unwrap();
         })
     };
 

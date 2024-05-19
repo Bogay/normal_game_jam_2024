@@ -16,6 +16,7 @@ pub mod handler;
 mod battle;
 mod skill;
 mod speech_recog;
+pub use speech_recog::record_speech;
 
 // generated binding
 mod gen {
@@ -24,6 +25,14 @@ mod gen {
     #![allow(non_snake_case)]
 
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+
+    // #[link(name = "libentry", kind = "dylib")]
+    // extern "C" {
+    //     pub fn create_bullet(
+    //         spell: *const *const ::std::os::raw::c_char,
+    //         cnt: ::std::os::raw::c_int,
+    //     ) -> *mut Bullet;
+    // }
 }
 use gen::create_bullet;
 use gen::Bullet as BulletInfo;

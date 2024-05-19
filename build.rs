@@ -5,10 +5,24 @@ use std::path::PathBuf;
 fn main() {
     build_vosk();
     build_our_ffi();
+
+    println!("cargo:rerun-if-changed=portaudio.lib");
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let portaudio = PathBuf::from("portaudio.lib");
+    std::fs::copy(portaudio, out_path.join("portaudio.lib")).unwrap();
 }
 
 fn build_our_ffi() {
     println!("cargo:rerun-if-changed=src/ffi");
+    // Write the bindings to the $OUT_DIR/bindings.rs file.
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+
+    // let dll_path = PathBuf::from("src/ffi/libentry.lib");
+    // if dll_path.exists() {
+    //     std::fs::copy(dll_path, out_path.join("libentry.a")).unwrap();
+    //     println!("cargo:rustc-link-search=native={}", out_path.display());
+    //     println!("cargo:rustc-link-lib=static=libentry");
+    // }
 
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
@@ -25,8 +39,6 @@ fn build_our_ffi() {
         // Unwrap the Result and panic on failure.
         .expect("Unable to generate bindings");
 
-    // Write the bindings to the $OUT_DIR/bindings.rs file.
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     bindings
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
